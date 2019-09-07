@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
+<<<<<<< HEAD
 <!-- Written by QtCreator 4.3.1, 2019-09-07T18:44:06. -->
+=======
+<!-- Written by QtCreator 4.3.1, 2019-09-07T09:54:36. -->
+>>>>>>> eeff13b5b82c2a063869374c58ac3b1f36dfa8e3
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -286,7 +290,11 @@
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">IDE</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">IDE2</value>
+<<<<<<< HEAD
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/IDE/IDE/IDE.pro</value>
+=======
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/IDE/IDE_Project/IDE/IDE.pro</value>
+>>>>>>> eeff13b5b82c2a063869374c58ac3b1f36dfa8e3
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments"></value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">IDE.pro</value>
