@@ -169,15 +169,6 @@ void IDE::closeEvent(QCloseEvent *event)
 //新建文件操作函数
 void IDE::newFile()
 {
-//   if (maybeSave()) //maybeSave函数判断文档是否需要保存
-//   {
-//       isUntitled = true;
-//       curFile = tr("未命名.c");
-//       setWindowTitle(curFile);
-//       ui->textEdit->clear();
-//       ui->textEdit->setVisible(true);
-
-//   }
     ChildWindow *child = creatChild();
     child->newFile();
     child->show();
