@@ -84,7 +84,7 @@ bool IDE::saveFile(const QString &fileName)
 //这里使用QFileDialog来实现了一个另存为对话框，并且获取了文件的路径，然后使用文件路径来保存文件。
 bool IDE::saveAs()
 {
-   QString fileName = QFileDialog::getSaveFileName(this,tr("另存为"),curFile);
+   QString fileName = QFileDialog::getSaveFileName(this,tr("另存为"),"未命名.c");
    if (fileName.isEmpty())
        return false;
    return saveFile(fileName);
@@ -166,11 +166,6 @@ void IDE::on_action_S_triggered()
     save();
 }
 
-//另存为
-void IDE::on_action_A_triggered()
-{
-    saveAs();
-}
 
 //打开
 void IDE::on_action_O_triggered()
@@ -199,7 +194,7 @@ void IDE::on_action_W_triggered()
 //退出
 void IDE::on_action_Q_triggered()
 {
-    on_action_Q_triggered();// 先执行关闭操作，再退出程序，qApp是指向应用程序的全局指针
+    //on_action_Q_triggered();// 先执行关闭操作，再退出程序，qApp是指向应用程序的全局指针
     qApp->quit();
 }
 
@@ -242,4 +237,10 @@ void IDE::showFindText()
 void IDE::on_action_F_triggered()
 {
     findDlg->show();
+}
+
+//另存为
+void IDE::on_action_M_triggered()
+{
+    saveAs();
 }

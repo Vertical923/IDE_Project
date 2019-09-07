@@ -50,6 +50,8 @@ private slots:
 
     void on_action_F_triggered();
 
+    void on_action_M_triggered();
+
 private:
     Ui::IDE *ui;
 
