@@ -1,5 +1,7 @@
 #include "ide.h"
 #include "ui_ide.h"
+#include "childwindow.h"
+#include "qmdisubwindow.h"
 #include <QMessageBox>
 #include <QPushButton>
 #include <QFileDialog>
@@ -7,6 +9,7 @@
 #include <QLineEdit>
 #include <QDialog>
 #include <QPushButton>
+#include <qtextedit.h>
 
 IDE::IDE(QWidget *parent) :
     QMainWindow(parent),
@@ -26,6 +29,7 @@ IDE::IDE(QWidget *parent) :
     QVBoxLayout *layout= new QVBoxLayout(findDlg);
     layout->addWidget(findLineEdit);
     layout->addWidget(btn);
+
     connect(btn, SIGNAL(clicked()), this, SLOT(showFindText()));
 }
 
@@ -34,6 +38,14 @@ IDE::~IDE()
     delete ui;
 }
 
+ChildWindow * IDE::activeChildwindow()
+{
+    if(QMdiSubWindow * activeSubwindow = ui->mdiArea->activeSubWindow())
+    {
+        return qobject_cast<ChildWindow *>(activeSubwindow->widget());
+        return 0;
+    }
+}
 
 //打开，加载文件
 bool IDE::loadFile(const QString &fileName)
@@ -55,6 +67,20 @@ bool IDE::loadFile(const QString &fileName)
    curFile = QFileInfo(fileName).canonicalFilePath();
    setWindowTitle(curFile);
    return true;
+
+}
+QMdiSubWindow * IDE::findChildWindow(const QString &fileName)
+{
+    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
+    foreach (QMdiSubWindow *window, ui->mdiArea->subWindowList())
+    {
+        ChildWindow *mdiChild = qobject_cast<ChildWindow *>(window->widget());
+        if(mdiChild->currentFile() == canonicalFilePath)
+        {
+            loadFile(fileName);
+        }
+    }
+    return 0;
 }
 
 //执行真正的文件保存操作
@@ -70,7 +96,6 @@ bool IDE::saveFile(const QString &fileName)
    QTextStream out(&file);
    QApplication::setOverrideCursor(Qt::WaitCursor);// 鼠标指针变为等待状态
    out << ui->textEdit->toPlainText();
-
    QApplication::restoreOverrideCursor();   // 鼠标指针恢复原来的状态
 
    isUntitled = false;
@@ -144,14 +169,36 @@ void IDE::closeEvent(QCloseEvent *event)
 //新建文件操作函数
 void IDE::newFile()
 {
-   if (maybeSave()) //maybeSave函数判断文档是否需要保存
-   {
-       isUntitled = true;
-       curFile = tr("未命名.c");
-       setWindowTitle(curFile);
-       ui->textEdit->clear();
-       ui->textEdit->setVisible(true);
-   }
+//   if (maybeSave()) //maybeSave函数判断文档是否需要保存
+//   {
+//       isUntitled = true;
+//       curFile = tr("未命名.c");
+//       setWindowTitle(curFile);
+//       ui->textEdit->clear();
+//       ui->textEdit->setVisible(true);
+
+//   }
+    ChildWindow *child = creatChild();
+    child->newFile();
+    child->show();
+}
+ChildWindow * IDE::creatChild()
+{
+    ChildWindow *child = new ChildWindow;
+    //ui->mdiArea->addSubWindow(child);
+    ui->mdiArea->addSubWindow(child);
+    connect(child,SIGNAL(copyAvailable(bool)),ui->action_X,
+            SLOT(setEnabled(bool)));
+
+    connect(child,SIGNAL(copyAvailable(bool)),ui->action_C,
+            SLOT(setEnabled(bool)));
+
+    connect(child->document(),SIGNAL(undoAvailable(bool)),
+            ui->action_Z,SLOT(setEnabled(bool)));
+
+    connect(child,SIGNAL(cursorPositionChanged()),this,SLOT(showTextRowAndCol()));
+
+    return child;
 }
 
 //新建
@@ -170,14 +217,24 @@ void IDE::on_action_S_triggered()
 //打开
 void IDE::on_action_O_triggered()
 {
-    if (maybeSave())
+    QString fileName = QFileDialog::getOpenFileName(this);
+    if(!fileName.isEmpty())
     {
-        QString fileName = QFileDialog::getOpenFileName(this);
-        // 如果文件名不为空，则加载文件
-        if (!fileName.isEmpty())
+        QMdiSubWindow *existing = findChildWindow(fileName);
+        if(existing)
         {
-            loadFile(fileName);
-            ui->textEdit->setVisible(true);
+            ui->mdiArea->setActiveSubWindow(existing);
+            return;
+        }
+        ChildWindow *child = creatChild();
+        if(child->loadFile(fileName))
+        {
+            ui->statusBar->showMessage(tr("opened"),2000);
+            child->show();
+        }
+        else
+        {
+            child->close();
         }
     }
 }

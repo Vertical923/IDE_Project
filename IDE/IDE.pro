@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        ide.cpp
+        ide.cpp \
+    childwindow.cpp
 
 HEADERS += \
-        ide.h
+        ide.h \
+    childwindow.h
 
 FORMS += \
         ide.ui

@@ -3,7 +3,11 @@
 
 #include <QMainWindow>
 #include <QCloseEvent>
-
+#include <QMdiArea>
+#include <qtextedit.h>
+class ChildWindow;
+class QMdiSubWindow;
+class QSingalMapper;
 class QLineEdit;
 class QDialog;
 
@@ -16,6 +20,7 @@ class IDE : public QMainWindow
     Q_OBJECT
 
 public:
+    QMdiArea *mdiArea;
     explicit IDE(QWidget *parent = 0);
     void newFile();   // 新建操作
     bool maybeSave(); // 判断是否需要保存
@@ -29,8 +34,6 @@ private slots:
     void on_action_N_triggered();
 
     void on_action_S_triggered();
-
-    void on_action_A_triggered();
 
     void on_action_O_triggered();
 
@@ -51,7 +54,10 @@ private slots:
     void on_action_F_triggered();
 
     void on_action_M_triggered();
-
+    
+    // creat child window
+    ChildWindow *creatChild();
+    
 private:
     Ui::IDE *ui;
 
@@ -60,6 +66,10 @@ private:
 
     QLineEdit *findLineEdit;//查找
     QDialog *findDlg;
+
+    QSingalMapper *windowMapper;
+    ChildWindow *activeChildwindow(); // creat child window
+    QMdiSubWindow *findChildWindow(const QString &fileName);
 
 protected:
     void closeEvent(QCloseEvent *event); // 关闭事件
