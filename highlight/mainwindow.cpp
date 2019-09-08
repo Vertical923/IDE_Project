@@ -52,7 +52,7 @@ Highlighter::Highlighter(QTextDocument *parent):QSyntaxHighlighter(parent)
         QStringLiteral("\\bslots\\b"), QStringLiteral("\\bstatic\\b"), QStringLiteral("\\bstruct\\b"),
         QStringLiteral("\\btemplate\\b"), QStringLiteral("\\btypedef\\b"), QStringLiteral("\\btypename\\b"),
         QStringLiteral("\\bunion\\b"), QStringLiteral("\\bunsigned\\b"), QStringLiteral("\\bvirtual\\b"),
-        QStringLiteral("\\bvoid\\b"), QStringLiteral("\\bvolatile\\b"), QStringLiteral("\\bbool\\b")
+        QStringLiteral("\\bvoid\\b"), QStringLiteral("\\bvolatile\\b"), QStringLiteral("\\bbool\\b"),QStringLiteral("\\b'('\\b")
     };
     //为 以上的关键词 定义专属高亮
     for (const QString &pattern : keywordPatterns){
@@ -98,6 +98,11 @@ Highlighter::Highlighter(QTextDocument *parent):QSyntaxHighlighter(parent)
 
     commentStartExpression=QRegularExpression(QStringLiteral("/\\*"));
     commentEndExpression=QRegularExpression(QStringLiteral("\\*/"));
+
+    bracketsMatching.setForeground(Qt::green);//为 括号里的内容 定义高亮
+    rule.pattern=QRegularExpression(QStringLiteral("(\\().*?(\\))"));
+    rule.format=bracketsMatching;
+    highlightingRules.append(rule);
 }
 
 void Highlighter::highlightBlock(const QString &text)//为“/* */”注释形式设施特殊的功能以实现

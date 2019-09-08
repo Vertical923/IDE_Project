@@ -39,6 +39,7 @@ private:
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
     QTextCharFormat valueFormat;
+    QTextCharFormat bracketsMatching;//括号匹配里的内容高亮
 };
 
 class MainWindow : public QMainWindow
@@ -48,7 +49,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
 
 private:
     void setupEditor();
