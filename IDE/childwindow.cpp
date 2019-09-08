@@ -8,11 +8,13 @@
 #include <QCloseEvent>
 #include <QPushButton>
 #include <qtextedit.h>
+#include <qtextcodec.h>
 
 ChildWindow::ChildWindow(QWidget *parent) :
     QTextEdit(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
     isUntitled = true;
 }

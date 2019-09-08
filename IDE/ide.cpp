@@ -201,7 +201,8 @@ void IDE::on_action_N_triggered()
 //保存
 void IDE::on_action_S_triggered()
 {
-    save();
+    if(activeChildwindow() && activeChildwindow()->save())
+        ui->statusBar->showMessage(tr("saved"));
 }
 
 
@@ -233,10 +234,7 @@ void IDE::on_action_O_triggered()
 //关闭
 void IDE::on_action_W_triggered()
 {
-    if (maybeSave())
-    {
-        ui->textEdit->setVisible(false);
-    }
+    ui->mdiArea->closeActiveSubWindow();
 }
 
 //退出
@@ -249,25 +247,29 @@ void IDE::on_action_Q_triggered()
 //撤销
 void IDE::on_action_Z_triggered()
 {
-    ui->textEdit->undo();
+    if(activeChildwindow())
+        activeChildwindow()->undo();
 }
 
 //剪切
 void IDE::on_action_X_triggered()
 {
-    ui->textEdit->cut();
+    if(activeChildwindow())
+        activeChildwindow()->cut();
 }
 
 //复制
 void IDE::on_action_C_triggered()
 {
-    ui->textEdit->copy();
+    if(activeChildwindow())
+        activeChildwindow()->redo();
 }
 
 //粘贴
 void IDE::on_action_V_triggered()
 {
-    ui->textEdit->paste();
+    if(activeChildwindow())
+        activeChildwindow()->paste();
 }
 
 void IDE::showFindText()
