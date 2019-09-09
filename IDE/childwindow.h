@@ -12,7 +12,7 @@ public:
     bool save();
     bool saveAs();
     bool saveFile(const QString &fileName);
-    
+    QTextEdit *textedit; // find function needed
     QString userFriendlyCurrentFile();
     QString currentFile(){
         return curFile;

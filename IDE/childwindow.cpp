@@ -15,7 +15,7 @@ ChildWindow::ChildWindow(QWidget *parent) :
 {
     setAttribute(Qt::WA_DeleteOnClose);
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
+    textedit = new QTextEdit;
     isUntitled = true;
 }
 

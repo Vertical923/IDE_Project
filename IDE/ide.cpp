@@ -16,10 +16,12 @@ IDE::IDE(QWidget *parent) :
     ui(new Ui::IDE)
 {
     ui->setupUi(this);
-
     isUntitled = true;    // 初始化文件为未保存状态
     curFile = tr("未命名.c");    // 初始化文件名为"未命名.c"
     setWindowTitle(curFile);    // 初始化窗口标题为文件名
+
+    /*多文档子窗口模式*/
+    ui->mdiArea->setViewMode(QMdiArea::TabbedView);
 
     /*创建查找窗口*/
     findDlg = new QDialog(this);
@@ -275,9 +277,9 @@ void IDE::on_action_V_triggered()
 void IDE::showFindText()
 {
     QString str = findLineEdit->text();//获取编译器中要查找的字符串
-    ui->textEdit->find(str, QTextDocument::FindBackward);
+    activeChildwindow()->textedit->find(str, QTextDocument::FindBackward);
     //未查找到则返回提示
-    if (!ui->textEdit->find(str, QTextDocument::FindBackward))
+    if (!activeChildwindow()->textedit->find(str, QTextDocument::FindBackward))
     {
        QMessageBox::warning(this, tr("查找"),tr("找不到%1").arg(str));
     }
