@@ -2,6 +2,7 @@
 #define CHILDWINDOW_H
 #include <QTextEdit>
 #include <qtextedit.h>
+#include "completelistwidget.h"
 #include <QVBoxLayout>
 #include <QMainWindow>
 #include <QCloseEvent>
@@ -13,6 +14,12 @@
 #include <QResizeEvent>
 #include <QSize>
 #include <QWidget>
+#include <QPlainTextEdit>
+#include <QObject>
+#include <QPainter>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <algorithm>
 
 class QPaintEvent;
 class QResizeEvent;
@@ -21,6 +28,13 @@ class QWidget;
 class QLineEdit;
 class QDialog;
 class LineNumberArea;
+
+QT_BEGIN_NAMESPACE
+class QPaintEvent;
+class QResizeEvent;
+class QSize;
+class QWidget;
+QT_END_NAMESPACE
 
 class Highlighter : public QSyntaxHighlighter //highlighter的class包含和定义高亮显示关键词的规则
 {
@@ -57,6 +71,8 @@ class ChildWindow : public QPlainTextEdit
 {
     Q_OBJECT
 public:
+    void setUpCompleteList();
+
     explicit ChildWindow(QWidget *parent = 0);
     void newFile();
     bool loadFile(const QString &fileName);
@@ -84,6 +100,8 @@ protected:
 
     //daimahangshu
     void resizeEvent(QResizeEvent *event);
+
+    void keyPressEvent(QKeyEvent *event) override;
     
 private slots:
     void documentWasModified();
@@ -93,13 +111,22 @@ private slots:
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     
+    void showCompleteWidget();
+
 private:
     void setCurrentFile(const QString &fileName);
     bool maybeSave();
     QString curFile;
     bool isUntitled;
 
-    // daimahangshu
+    QColor lineColor;
+    QColor editorColor;
+    QStringList completeList;//储存自动填充的关键字
+    //QListWidget *completeWidget;
+    CompleteListWidget *completeWidget;
+    QString getWordOfCursor();
+    int completeState;
+    int getCompleteWidgetX();
 
 };
 class LineNumberArea : public QWidget
@@ -121,5 +148,9 @@ protected:
 private:
     ChildWindow *codeEditor;
 };
-
+enum CompleteState{
+  Ignore=0,
+  Showing=1,
+  Hide=2
+};
 #endif // CHILDWINDOW_H

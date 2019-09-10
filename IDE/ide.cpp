@@ -3,6 +3,7 @@
 #include "childwindow.h"
 #include "qmdisubwindow.h"
 #include "stdlib.h"
+#include <QApplication>
 #include <QTextCharFormat>
 #include <QSyntaxHighlighter>
 #include <QMessageBox>
