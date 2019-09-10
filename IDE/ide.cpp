@@ -2,6 +2,9 @@
 #include "ui_ide.h"
 #include "childwindow.h"
 #include "qmdisubwindow.h"
+#include "stdlib.h"
+#include <QTextCharFormat>
+#include <QSyntaxHighlighter>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QFileDialog>
@@ -16,8 +19,9 @@ IDE::IDE(QWidget *parent) :
     ui(new Ui::IDE)
 {
     ui->setupUi(this);
+
     isUntitled = true;    // 初始化文件为未保存状态
-    curFile = tr("未命名.c");    // 初始化文件名为"未命名.c"
+    curFile = tr("zhtql");    // 初始化文件名为"未命名.c"
     setWindowTitle(curFile);    // 初始化窗口标题为文件名
 
     /*多文档子窗口模式*/
@@ -62,7 +66,8 @@ bool IDE::loadFile(const QString &fileName)
    QApplication::setOverrideCursor(Qt::WaitCursor);
 
    // 读取文件的全部文本内容，并添加到编辑器中
-   ui->textEdit->setPlainText(in.readAll());
+   //ui->textEdit->setPlainText(in.readAll());
+   activeChildwindow()->textedit->setPlainText(in.readAll());
    QApplication::restoreOverrideCursor();
 
    // 设置当前文件
@@ -97,7 +102,7 @@ bool IDE::saveFile(const QString &fileName)
    }
    QTextStream out(&file);
    QApplication::setOverrideCursor(Qt::WaitCursor);// 鼠标指针变为等待状态
-   out << ui->textEdit->toPlainText();
+   out << activeChildwindow()->textedit->toPlainText();
    QApplication::restoreOverrideCursor();   // 鼠标指针恢复原来的状态
 
    isUntitled = false;
@@ -135,7 +140,7 @@ bool IDE::save()
 bool IDE::maybeSave()
 {
     // 如果文档被更改了
-    if (ui->textEdit->document()->isModified()) {//isModified判断文档是否被更改
+    if(activeChildwindow()->textedit->document()->isModified()) {
     // 自定义一个警告对话框
        QMessageBox box;
        box.setWindowTitle(tr("警告"));
@@ -274,6 +279,49 @@ void IDE::on_action_V_triggered()
         activeChildwindow()->paste();
 }
 
+//编译槽函数
+void IDE::on_action_I_triggered()
+{
+    //判断是否需要保存
+    activeChildwindow()->save();
+    //save();
+    //编译
+    compile();
+}
+
+//运行
+void IDE::on_action_R_triggered()
+{
+    //判断是否需要保存
+    activeChildwindow()->save();
+    //save();
+    //编译
+    compile();
+    //运行
+    if (compile_success)
+    {
+        //获取执行文件目录
+        QString path = curFile.left(curFile.length() - 2)+".exe";
+        path.replace("/","\\");//替换
+        qDebug()<<path<<endl;
+        QProcess cmd;
+        cmd.start("cmd.exe",QStringList()<<"/c"<<QString("start " + path));
+        cmd.waitForStarted(50);
+        cmd.waitForFinished();
+        cmd.close();
+    }
+}
+
+void IDE::read_error()
+{
+    QByteArray bytes = cmd->readAllStandardError();
+
+    QString result = QString::fromLocal8Bit(bytes);
+    compile_success = false;
+    //qDebug()<<result<<endl;
+    ui->textEdit_2->setText(result);
+}
+
 void IDE::showFindText()
 {
     QString str = findLineEdit->text();//获取编译器中要查找的字符串
@@ -295,4 +343,44 @@ void IDE::on_action_F_triggered()
 void IDE::on_action_M_triggered()
 {
     saveAs();
+}
+
+//编译
+void IDE::compile()
+{
+    ui->textEdit_2->clear();
+    compile_success = true;//初始化为true
+    cmd = new QProcess();
+    QByteArray command;
+    connect(cmd,SIGNAL(readyReadStandardError()),this,SLOT(read_error()));//初始化
+
+    cmd ->start("cmd.exe");//运行进程
+
+    //获取文件路径
+    QString file_name;
+
+    file_name = curFile.right(curFile.length() - curFile.lastIndexOf("/") - 1);
+    QString path_str = curFile.left(curFile.lastIndexOf("/")); //程序所在文件路径，不包括文件名
+    path_str.replace("/","\\");//替换
+    QString disk = path_str.left(2);//找出文件所在磁盘
+
+    QString cmd_change_disk = disk + "\r\n";
+    command = cmd_change_disk.toLocal8Bit();
+    cmd->write(command);//换磁盘
+
+    QString cmd_change_path ="cd "+path_str+"\r\n";
+    command = cmd_change_path.toLocal8Bit();
+    cmd->write(command);//进入所在文件夹
+
+    QString gcc_c ="gcc "+ file_name +" -o "+file_name.left(file_name.length() - 2) + "\r\n";
+    command = gcc_c.toLocal8Bit();
+    cmd ->write(command);//编译
+
+    QString exit = "exit";
+    command = exit.toLocal8Bit();
+    cmd ->write(command);
+
+    cmd->waitForFinished(100);
+    cmd->close();
+
 }

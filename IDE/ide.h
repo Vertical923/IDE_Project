@@ -5,6 +5,13 @@
 #include <QCloseEvent>
 #include <QMdiArea>
 #include <qtextedit.h>
+#include <QDebug>
+#include <QProcess>
+#include <QTextCharFormat>
+#include <QSyntaxHighlighter>
+#include <QRegularExpression>
+#include <QTextEdit>
+
 class ChildWindow;
 class QMdiSubWindow;
 class QSingalMapper;
@@ -28,6 +35,7 @@ public:
     bool saveAs();    // 另存为操作
     bool saveFile(const QString &fileName); // 保存文件
     bool loadFile(const QString &fileName); // 加载文件
+    void compile();
     ~IDE();
 
 private slots:
@@ -54,6 +62,12 @@ private slots:
     void on_action_F_triggered();
 
     void on_action_M_triggered();
+
+    void on_action_I_triggered();
+
+    void on_action_R_triggered();
+
+    void read_error();
     
     // creat child window
     ChildWindow *creatChild();
@@ -62,10 +76,13 @@ private:
     Ui::IDE *ui;
 
     bool isUntitled;// 为真表示文件没有保存过，为假表示文件已经被保存过了
+    bool compile_success;
     QString curFile;// 保存当前文件的路径
 
     QLineEdit *findLineEdit;//查找
     QDialog *findDlg;
+
+    QProcess *cmd;
 
     QSingalMapper *windowMapper;
     ChildWindow *activeChildwindow(); // creat child window

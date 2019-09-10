@@ -15,14 +15,11 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0">
+    <item row="2" column="0">
      <widget class="QTextEdit" name="textEdit_2"/>
     </item>
     <item row="0" column="0">
      <widget class="QMdiArea" name="mdiArea"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QTextEdit" name="textEdit"/>
     </item>
    </layout>
   </widget>
