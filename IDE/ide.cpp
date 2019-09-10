@@ -67,7 +67,10 @@ bool IDE::loadFile(const QString &fileName)
 
    // 读取文件的全部文本内容，并添加到编辑器中
    //ui->textEdit->setPlainText(in.readAll());
-   activeChildwindow()->textedit->setPlainText(in.readAll());
+   //activeChildwindow()->lineNumberArea->setPlainText(in.readAll());
+
+   //setPlainText(in.readAll());
+   activeChildwindow()->setPlainText(in.readAll());
    QApplication::restoreOverrideCursor();
 
    // 设置当前文件
@@ -102,7 +105,7 @@ bool IDE::saveFile(const QString &fileName)
    }
    QTextStream out(&file);
    QApplication::setOverrideCursor(Qt::WaitCursor);// 鼠标指针变为等待状态
-   out << activeChildwindow()->textedit->toPlainText();
+   out << activeChildwindow()->toPlainText();
    QApplication::restoreOverrideCursor();   // 鼠标指针恢复原来的状态
 
    isUntitled = false;
@@ -140,7 +143,7 @@ bool IDE::save()
 bool IDE::maybeSave()
 {
     // 如果文档被更改了
-    if(activeChildwindow()->textedit->document()->isModified()) {
+    if(activeChildwindow()->document()->isModified()) {
     // 自定义一个警告对话框
        QMessageBox box;
        box.setWindowTitle(tr("警告"));
@@ -325,9 +328,11 @@ void IDE::read_error()
 void IDE::showFindText()
 {
     QString str = findLineEdit->text();//获取编译器中要查找的字符串
-    activeChildwindow()->textedit->find(str, QTextDocument::FindBackward);
+    //activeChildwindow()->lineNumberArea->find(str, QTextDocument::FindBackward);
+    activeChildwindow()->find(str, QTextDocument::FindBackward);
+    //activeChildwindow()->textedit->find(str, QTextDocument::FindBackward);
     //未查找到则返回提示
-    if (!activeChildwindow()->textedit->find(str, QTextDocument::FindBackward))
+    if (!activeChildwindow()->find(str, QTextDocument::FindBackward))
     {
        QMessageBox::warning(this, tr("查找"),tr("找不到%1").arg(str));
     }

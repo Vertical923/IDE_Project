@@ -1,8 +1,10 @@
 #include "childwindow.h"
 #include <QFile>
+#include <qplaintextedit.h>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QtWidgets>
 #include <QApplication>
 #include <QFileDialog>
 #include <QCloseEvent>
@@ -10,29 +12,119 @@
 #include <qtextedit.h>
 #include <qtextcodec.h>
 #include <QVBoxLayout>
+#include <QPlainTextEdit>
 
 ChildWindow::ChildWindow(QWidget *parent) :
-    QTextEdit(parent)
+    QPlainTextEdit(parent)
 {
     QFont font;
     font.setFamily("Courier");
     font.setFixedPitch(true);
     font.setPointSize(10);
     setAttribute(Qt::WA_DeleteOnClose);
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     mainlayout = new QVBoxLayout;
 
-    textedit = new QTextEdit(this);
-    textedit->setFont(font);
-    highlighter = new Highlighter(textedit->document());
+    lineNumberArea = new LineNumberArea(this);
+    lineNumberArea->setFont(font);
+
+    highlighter = new Highlighter(this->document());
     QFile file("mainwindow.h");
     if(file.open(QFile::ReadOnly|QFile::Text))
-        textedit->setPlainText(file.readAll());
+        this->setPlainText(file.readAll());
 
-    mainlayout->addWidget(this->textedit);
-    setLayout(mainlayout);
-    textedit->show();
+    connect(this, SIGNAL(blockCountChanged(int)), this,SLOT(updateLineNumberAreaWidth(int)));
+    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+
+    updateLineNumberAreaWidth(0);
+    highlightCurrentLine();
+
     isUntitled = true;
+}
+// tmf
+int ChildWindow::lineNumberAreaWidth()
+{
+    int digits = 1;
+    int max = qMax(1, blockCount());
+    while (max >= 10) {
+        max /= 10;
+        ++digits;
+    }
+
+    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+
+    return space;
+}
+void ChildWindow::resizeEvent(QResizeEvent *e)
+{
+    QPlainTextEdit::resizeEvent(e);
+    QRect cr = contentsRect();
+    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void ChildWindow::updateLineNumberAreaWidth(int /* newBlockCount */)
+{
+    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+}
+
+void ChildWindow::updateLineNumberArea(const QRect &rect, int dy)
+{
+    if(dy)
+    {
+        lineNumberArea->scroll(0, dy);
+    }
+    else
+    {
+        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    }
+    if(rect.contains(viewport()->rect()))
+    {
+        updateLineNumberAreaWidth(0);
+    }
+}
+
+void ChildWindow::highlightCurrentLine()
+{
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    if(!isReadOnly())
+    {
+        QTextEdit::ExtraSelection selection;
+
+        QColor lineColor = QColor(Qt::yellow).lighter(160);
+
+        selection.format.setBackground(lineColor);
+        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+        selection.cursor = textCursor();
+        selection.cursor.clearSelection();
+        extraSelections.append(selection);
+    }
+    setExtraSelections(extraSelections);
+}
+void ChildWindow::lineNumberAreaPaintEvent(QPaintEvent *event)
+{
+    QPainter painter(lineNumberArea);
+    painter.fillRect(event->rect(), Qt::lightGray);
+
+
+    QTextBlock block = firstVisibleBlock();
+    int blockNumber = block.blockNumber();
+    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+    int bottom = top + (int) blockBoundingRect(block).height();
+
+    while (block.isValid() && top <= event->rect().bottom()) {
+        if (block.isVisible() && bottom >= event->rect().top()) {
+            QString number = QString::number(blockNumber + 1);
+            painter.setPen(Qt::black);
+            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+                             Qt::AlignRight, number);
+        }
+
+        block = block.next();
+        top = bottom;
+        bottom = top + (int) blockBoundingRect(block).height();
+        ++blockNumber;
+    }
 }
 
 // creat new file
@@ -74,8 +166,7 @@ bool ChildWindow::loadFile(const QString &fileName)
     }
     QTextStream in(&file); // creat file stream
     QApplication::setOverrideCursor(Qt::WaitCursor); // set the cursor tobe waited
-    this->textedit->setPlainText(in.readAll());
-    //setPlainText(in.readAll()); // read the file and put them into edit
+    this->setPlainText(in.readAll());
     QApplication::restoreOverrideCursor(); // set back the station of cursor
 
     setCurrentFile(fileName);// set the current file

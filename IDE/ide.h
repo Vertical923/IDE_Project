@@ -11,6 +11,7 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 #include <QTextEdit>
+#include <qplaintextedit.h>
 
 class ChildWindow;
 class QMdiSubWindow;

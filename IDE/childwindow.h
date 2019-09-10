@@ -9,9 +9,18 @@
 #include <QTextCharFormat>
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
+#include <QPlainTextEdit>
+#include <QResizeEvent>
+#include <QSize>
+#include <QWidget>
 
+class QPaintEvent;
+class QResizeEvent;
+class QSize;
+class QWidget;
 class QLineEdit;
 class QDialog;
+class LineNumberArea;
 
 class Highlighter : public QSyntaxHighlighter //highlighter的class包含和定义高亮显示关键词的规则
 {
@@ -44,7 +53,7 @@ private:
     QTextCharFormat bracketsMatching;//括号匹配里的内容高亮
 };
 
-class ChildWindow : public QTextEdit
+class ChildWindow : public QPlainTextEdit
 {
     Q_OBJECT
 public:
@@ -54,8 +63,8 @@ public:
     bool save();
     bool saveAs();
     bool saveFile(const QString &fileName);
+    QWidget *lineNumberArea;
 
-    QTextEdit *textedit; // find function needed
     QVBoxLayout *mainlayout;
 
     Highlighter *highlighter;
@@ -64,18 +73,53 @@ public:
     QString currentFile(){
         return curFile;
     }
+
+    //代码行编号
+    void lineNumberAreaPaintEvent(QPaintEvent *event);
+    int lineNumberAreaWidth();
+    //bianhao
     
 protected:
     void closeEvent(QCloseEvent *event);
+
+    //daimahangshu
+    void resizeEvent(QResizeEvent *event);
     
 private slots:
     void documentWasModified();
+
+    //daimahangshu
+    void updateLineNumberAreaWidth(int newBlockCount);
+    void highlightCurrentLine();
+    void updateLineNumberArea(const QRect &, int);
     
 private:
     void setCurrentFile(const QString &fileName);
     bool maybeSave();
     QString curFile;
-    bool isUntitled;    
+    bool isUntitled;
+
+    // daimahangshu
+
+};
+class LineNumberArea : public QWidget
+{
+public:
+    LineNumberArea(ChildWindow *editor) : QWidget(editor) {
+        codeEditor = editor;
+    }
+
+    QSize sizeHint() const override {
+        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override {
+        codeEditor->lineNumberAreaPaintEvent(event);
+    }
+
+private:
+    ChildWindow *codeEditor;
 };
 
 #endif // CHILDWINDOW_H
